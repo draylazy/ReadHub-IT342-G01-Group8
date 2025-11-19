@@ -1,0 +1,116 @@
+.main-header {
+  background-color: var(--header-bg, #ffffff);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-shadow: 0 1px 0 #e5e5e5;
+  font-family: 'Inter', sans-serif;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 80px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.text-group .title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--primary-maroon, #701818);
+}
+
+.text-group .subtitle {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--accent-gold, #FFD700);
+  text-transform: uppercase;
+}
+
+.header-center input {
+  width: 450px;
+  height: 40px;
+  border: 1px solid var(--border-color, #CCCCCC);
+  border-radius: 20px;
+  padding: 0 20px;
+  font-size: 0.95rem;
+}
+
+.header-right .logout-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  color: var(--primary-maroon, #701818);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.header-subnav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0.5rem 0;
+  background-color: var(--header-bg, #ffffff);
+  border-top: 1px solid #e5e5e5;
+}
+
+.header-subnav .nav-link {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--primary-maroon, #701818);
+  transition: opacity 0.2s ease;
+}
+
+.header-subnav .nav-link:hover {
+  opacity: 0.7;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Profile */
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.header-profile .avatar {
+  width: 36px;
+  height: 36px;
+  background-color: var(--primary-maroon, #701818);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.header-profile .profile-info .greeting {
+  font-size: 0.9rem;
+  color: var(--primary-maroon, #701818);
+  font-weight: 500;
+}
+
+/* Logout button already defined */

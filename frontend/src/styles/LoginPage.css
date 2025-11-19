@@ -1,0 +1,68 @@
+/* LoginPage.css */
+
+.login-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+.left-side {
+  flex: 1;
+  background: var(--bg-white);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.right-side {
+  flex: 1;
+  background: var(--maroon-dark);
+  display: none; /* hide right side for now */
+}
+
+.logo {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: var(--text-dark);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: var(--maroon-light);
+  color: var(--text-light);
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.signup-link {
+  margin-top: 0.5rem;
+  text-align: center;
+  color: var(--maroon-dark);
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .right-side {
+    display: block;
+  }
+}

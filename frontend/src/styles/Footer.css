@@ -1,0 +1,60 @@
+/* Footer.css */
+
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem; /* moderate vertical and horizontal padding */
+  background: linear-gradient(to right, #F4C430, #8B4513); /* gold to brown gradient */
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  flex-wrap: wrap; /* responsive stacking on smaller screens */
+  gap: 1rem;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  font-size: 0.9rem;
+}
+
+.footer-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-center img {
+  width: 55px;      /* tiny size for footer */
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.footer-right {
+  display: flex;
+  gap: 2.5rem; /* space between links */
+  font-size: 0.9rem;
+}
+
+.footer-link {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .app-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-right {
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+}

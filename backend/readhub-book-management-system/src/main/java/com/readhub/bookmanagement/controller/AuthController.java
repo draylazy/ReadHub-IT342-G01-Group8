@@ -44,4 +44,12 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        // In a stateless JWT system, the client handles logout by deleting the token.
+        // This endpoint exists to satisfy the requirement and can be used for
+        // future features like token blacklisting.
+        return ResponseEntity.ok("User logged out successfully.");
+    }
 }

@@ -1,0 +1,9 @@
+.stat-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card p {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
