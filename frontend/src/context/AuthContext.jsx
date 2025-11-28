@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+// src/context/AuthContext.jsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance, { setAuthToken } from "../api/axiosInstance";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -9,93 +16,130 @@ export default function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("readhub_token") || null);
+  const [token, setToken] = useState(localStorage.getItem("readhub_token"));
   const [error, setError] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  // --- LOGOUT ---
+  // apply token to axios every change
+  useEffect(() => {
+    setAuthToken(token);
+  }, [token]);
+
+  // logout
   const logout = useCallback(() => {
     localStorage.removeItem("readhub_token");
     setToken(null);
     setUser(null);
     setError(null);
+    setAuthToken(null);
     navigate("/login");
   }, [navigate]);
 
-  // --- FETCH USER PROFILE ---
+  // fetch profile
   const fetchUserProfile = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get("/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      setLoadingProfile(true);
+      const res = await axiosInstance.get("/users/profile");
       setUser(res.data);
     } catch (err) {
-      logout(); // Invalid token, log out
+      console.error("PROFILE FETCH FAILED", err);
+      logout();
+    } finally {
+      setLoadingProfile(false);
     }
   }, [token, logout]);
 
-  // --- useEffect calls fetchUserProfile once on mount or token change ---
+  // fetch profile only if token exists AND after login sets token
   useEffect(() => {
-    fetchUserProfile();
-  }, [fetchUserProfile]);
+    if (token) fetchUserProfile();
+  }, [token, fetchUserProfile]);
 
-  // --- LOGIN ---
+  // login
   const login = async (email, password) => {
     try {
-      const res = await axios.post("/api/auth/login", { email, password });
+      const res = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
+
       const data = res.data;
-      localStorage.setItem("readhub_token", data.token);
-      setToken(data.token);
-      setUser(data.user);
+
+      const receivedToken =
+        data.token || data.accessToken || data.jwt || null;
+
+      if (!receivedToken) {
+        throw new Error("Backend returned no token");
+      }
+
+      localStorage.setItem("readhub_token", receivedToken);
+      setToken(receivedToken);
+      setAuthToken(receivedToken);
+
+      // if backend sends user directly, use it
+      if (data.user) {
+        setUser(data.user);
+      } else {
+        await fetchUserProfile();
+      }
+
       setError(null);
+      return data;
     } catch (err) {
+      console.error("LOGIN ERROR:", err?.response || err);
       setError(err.response?.data || "Login failed");
       throw err;
     }
   };
 
-  // --- REGISTER ---
+  // register
   const register = async (payload) => {
     try {
-      await axios.post("/api/auth/register", payload);
+      await axiosInstance.post("/auth/register", payload);
       setError(null);
       navigate("/login");
     } catch (err) {
+      console.error("REGISTER ERROR:", err?.response || err);
       setError(err.response?.data || "Registration failed");
       throw err;
     }
   };
 
-  // --- UPDATE PROFILE ---
+  // update profile
   const updateProfile = async (payload) => {
-    if (!token) throw new Error("No token");
     try {
-      const res = await axios.put("/api/users/profile", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axiosInstance.put("/users/profile", payload);
       setUser(res.data);
       return res.data;
     } catch (err) {
+      console.error("UPDATE PROFILE ERROR:", err);
       throw err;
     }
   };
 
-  // --- DELETE ACCOUNT ---
   const deleteAccount = async () => {
-    if (!token) throw new Error("No token");
     try {
-      await axios.delete("/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete("/users/profile");
       logout();
     } catch (err) {
+      console.error("DELETE ERROR:", err);
       throw err;
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, token, error, login, register, logout, updateProfile, deleteAccount }}
+      value={{
+        user,
+        token,
+        error,
+        loadingProfile,
+        login,
+        register,
+        logout,
+        updateProfile,
+        deleteAccount,
+      }}
     >
       {children}
     </AuthContext.Provider>

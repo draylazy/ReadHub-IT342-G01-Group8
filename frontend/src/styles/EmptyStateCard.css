@@ -1,0 +1,10 @@
+.empty-state-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  color: #666666;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

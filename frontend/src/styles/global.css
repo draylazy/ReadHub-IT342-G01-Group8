@@ -1,0 +1,114 @@
+/* GLOBAL RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* LAYOUT BASE */
+.fullscreen-center {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background: #f3f3f3;
+}
+
+/* CARD WRAPPER (login/register) */
+.auth-card {
+    width: 100%;
+    max-width: 1100px;
+    background: #ffffff;
+    border-radius: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    box-shadow: 0px 8px 25px rgba(0,0,0,0.08);
+}
+
+/* LEFT SIDE (form) */
+.auth-left {
+    padding: 3rem 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* TYPOGRAPHY */
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+/* INPUT FIELDS */
+.input-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: 0.2s ease;
+}
+
+.input:focus {
+    border-color: #7f1d1d;
+    box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.25);
+    outline: none;
+}
+
+/* BUTTON */
+.button-red {
+    width: 100%;
+    background: #7f1d1d;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+    box-shadow: 0 4px 15px rgba(127, 29, 29, 0.25);
+}
+
+.button-red:hover {
+    background: #991b1b;
+}
+
+/* RIGHT SIDE IMAGE */
+.auth-img {
+    background-size: cover;
+    background-position: center;
+}
+
+/* ERROR BOX */
+.error-box {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
