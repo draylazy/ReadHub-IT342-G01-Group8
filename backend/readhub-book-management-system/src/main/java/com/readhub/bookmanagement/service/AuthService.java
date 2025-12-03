@@ -6,60 +6,71 @@ import com.readhub.bookmanagement.dto.RegisterRequest;
 import com.readhub.bookmanagement.model.Role;
 import com.readhub.bookmanagement.model.User;
 import com.readhub.bookmanagement.repository.UserRepository;
-import com.readhub.bookmanagement.security.JwtTokenProvider;
+import com.readhub.bookmanagement.security.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider tokenProvider;
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository,
-                       PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenProvider = tokenProvider;
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already in use");
+        }
+
+        // Fix: Use Builder correctly with the fields from our User.java
+        var user = User.builder()
+                .firstName(request.getFirstName()) // Matches User.java
+                .lastName(request.getLastName())   // Matches User.java
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword())) // Matches User.java (passwordHash)
+                .role(Role.STUDENT) // Fix: Use the Enum constant directly
+                .build();
+
+        userRepository.save(user);
+
+        // Generate token
+        var jwtToken = jwtUtils.generateToken(new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),
+                Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        ));
+
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .build();
     }
 
-    public AuthResponse loginUser(LoginRequest loginRequest) {
-        // Authenticate using Spring Security
-        Authentication authentication = authenticationManager.authenticate(
+    public AuthResponse authenticate(LoginRequest request) {
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
+                        request.getEmail(),
+                        request.getPassword()
                 )
         );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.generateToken(authentication);
-
-        User user = userRepository.findByEmail(loginRequest.getEmail())
+        var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new AuthResponse(jwt, user); // send JWT + user info
-    }
+        var jwtToken = jwtUtils.generateToken(new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),
+                Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        ));
 
-    public User registerUser(RegisterRequest registerRequest) {
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
-        }
-
-        User user = new User();
-        user.setFirstName(registerRequest.getFirstName());
-        user.setLastName(registerRequest.getLastName());
-        user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole(Role.ROLE_BORROWER);
-
-        return userRepository.save(user);
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .build();
     }
 }

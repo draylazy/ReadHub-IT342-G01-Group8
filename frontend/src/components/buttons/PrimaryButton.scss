@@ -1,0 +1,17 @@
+@import '../../styles/variables.scss';
+
+.primary-btn {
+  background-color: $color-brand-maroon;
+  color: white;
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: $shadow-card;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

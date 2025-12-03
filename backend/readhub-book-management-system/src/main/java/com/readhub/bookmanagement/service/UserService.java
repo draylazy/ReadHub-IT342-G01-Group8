@@ -1,59 +1,134 @@
 package com.readhub.bookmanagement.service;
 
 import com.readhub.bookmanagement.dto.UserProfileDto;
+import com.readhub.bookmanagement.dto.UserUpdateDto;
+import com.readhub.bookmanagement.model.Role;
 import com.readhub.bookmanagement.model.User;
+import com.readhub.bookmanagement.repository.TransactionRepository;
 import com.readhub.bookmanagement.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
+    private final PasswordEncoder passwordEncoder;
+    
+    private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
 
-    public UserProfileDto getUserProfile(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return mapToDto(user);
+    // --- MAIN FIX: Get All Students ---
+    public List<UserProfileDto> getAllStudents() {
+        // 1. Fetch EVERYTHING from the database
+        List<User> allUsers = userRepository.findAll();
+        
+        // System.out.println("DEBUG: UserService found total " + allUsers.size() + " users in database.");
+
+        // 2. Filter in Java (More reliable than SQL for Enums sometimes)
+        List<UserProfileDto> students = allUsers.stream()
+                .filter(user -> {
+                    boolean isStudent = user.getRole() == Role.STUDENT;
+                    // Debug print to see what Java thinks the role is
+                    if (isStudent) {
+                        System.out.println(" -> Found Student: " + user.getEmail());
+                    }
+                    return isStudent;
+                })
+                .map(user -> UserProfileDto.builder()
+                        .userId(user.getUserId())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .email(user.getEmail())
+                        .role(user.getRole().name())
+                        .avatarUrl(user.getAvatarUrl())
+                        .build())
+                .collect(Collectors.toList());
+                
+        System.out.println("DEBUG: Returning " + students.size() + " student DTOs to frontend.");
+        return students;
     }
 
-    public UserProfileDto updateUserProfile(String email, UserProfileDto profileDto) {
+    // --- Other Methods (Kept exactly as they were) ---
+
+    public UserProfileDto getCurrentUserProfile(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setFirstName(profileDto.getFirstName());
-        user.setLastName(profileDto.getLastName());
+        return UserProfileDto.builder()
+                .userId(user.getUserId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .avatarUrl(user.getAvatarUrl())
+                .build();
+    }
 
-        // Optional: Allow email change if it's not already taken
-        if (!email.equals(profileDto.getEmail())) {
-            if (userRepository.existsByEmail(profileDto.getEmail())) {
-                throw new RuntimeException("Error: Email is already in use!");
-            }
-            user.setEmail(profileDto.getEmail());
+    @Transactional
+    public void updateUserProfile(String email, UserUpdateDto request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getFirstName() != null && !request.getFirstName().isEmpty()) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null && !request.getLastName().isEmpty()) {
+            user.setLastName(request.getLastName());
+        }
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        }
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public String uploadAvatar(String email, MultipartFile file) throws IOException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!Files.exists(fileStorageLocation)) {
+            Files.createDirectories(fileStorageLocation);
         }
 
-        User updatedUser = userRepository.save(user);
-        return mapToDto(updatedUser);
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path targetLocation = fileStorageLocation.resolve(fileName);
+        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        
+        String fileUrl = "http://localhost:8080/uploads/" + fileName;
+        user.setAvatarUrl(fileUrl);
+        userRepository.save(user);
+        
+        return fileUrl; 
     }
 
-    public void deleteUserProfile(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    @Transactional
+    public void deleteUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Add logic here to handle related transactions before deleting
-        // For now, we'll just delete the user
+        if (transactionRepository.existsByUser(user)) {
+            throw new RuntimeException("Cannot delete: User has transaction history. Please archive instead.");
+        }
         userRepository.delete(user);
     }
 
-
-    private UserProfileDto mapToDto(User user) {
-        UserProfileDto dto = new UserProfileDto();
-        dto.setUserId(user.getUserId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-        return dto;
+    @Transactional
+    public void deleteAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        userRepository.delete(user);
     }
 }

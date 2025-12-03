@@ -1,0 +1,231 @@
+/* ==========================================
+   🎨 PROFILE PAGE STYLES
+   ========================================== */
+
+.profile-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+/* --- HEADER SECTION --- */
+.profile-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+/* ... inside profile.scss ... */
+.btn-back {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+
+  /* Red Warning Hover */
+  &:hover {
+    background-color: #FEE2E2; /* Light Red */
+    color: #DC2626; /* Deep Red */
+    border-color: #FECACA;
+  }
+}
+
+/* Dark Mode Override */
+body[data-theme='dark'] .btn-back:hover {
+  background-color: #450A0A; 
+  color: #FCA5A5;
+  border-color: #7F1D1D;
+}
+.header-content {
+  .section-title {
+    font-size: 28px;
+    margin: 0;
+    color: var(--maroon);
+    font-weight: 700;
+  }
+
+  .section-subtitle {
+    color: var(--text-sub);
+    margin-top: 4px;
+    font-size: 14px;
+  }
+}
+
+/* --- PROFILE CARD --- */
+.profile-card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.profile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+
+  .large-avatar {
+    width: 80px;
+    height: 80px;
+    background-color: var(--beige-bg);
+    color: var(--maroon);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 700;
+  }
+
+  .user-details {
+    h3 {
+      font-size: 20px;
+      margin: 0;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+  }
+}
+
+/* --- FORM STYLES --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+
+  .form-group {
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-main);
+      background: var(--white);
+      transition: all 0.2s;
+
+      &:focus {
+        border-color: var(--maroon);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(130, 17, 36, 0.1);
+      }
+
+      &:disabled {
+        background-color: #F3F4F6;
+        cursor: not-allowed;
+        color: #6B7280;
+      }
+    }
+
+    &.full-width {
+      grid-column: span 2;
+    }
+  }
+}
+
+.form-actions {
+  text-align: right;
+  margin-top: 32px;
+
+  .btn-save {
+    background-color: var(--maroon);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+/* --- DANGER ZONE --- */
+.danger-zone {
+  margin-top: 40px;
+  padding: 24px;
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 12px;
+
+  .danger-content {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .danger-icon-box {
+    background: #FEE2E2;
+    padding: 12px;
+    border-radius: 50%;
+    color: #DC2626;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .danger-text {
+    .danger-title {
+      color: #991B1B;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      font-size: 16px;
+    }
+
+    .danger-desc {
+      font-size: 14px;
+      color: #7F1D1D;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .btn-delete {
+      background-color: #DC2626;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background-color: #B91C1C;
+      }
+    }
+  }
+}

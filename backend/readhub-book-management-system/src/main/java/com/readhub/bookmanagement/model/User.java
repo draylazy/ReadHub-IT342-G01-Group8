@@ -1,73 +1,47 @@
 package com.readhub.bookmanagement.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
-import java.util.List;
+import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-public class User implements UserDetails {
+@AllArgsConstructor
+@Builder
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id") 
     private Long userId;
 
-    @Column(nullable = false)
-    private String firstName;
-
-    @Column(nullable = false)
-    private String lastName;
-
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+    
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+    // CRITICAL: Ensure this is mapped to the 'role' column
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "role") 
     private Role role;
 
-    @OneToMany(mappedBy = "user")
-    private List<Transaction> transactions;
+    @Column(name = "registration_date", updatable = false)
+    private LocalDateTime registrationDate;
 
-    // --- UserDetails Methods ---
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
-    }
-
-    @Override
-    public String getUsername() {
-        return this.email; // We use email as the "username"
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    @PrePersist
+    protected void onCreate() {
+        this.registrationDate = LocalDateTime.now();
     }
 }

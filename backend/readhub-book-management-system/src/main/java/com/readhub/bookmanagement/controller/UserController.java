@@ -1,45 +1,72 @@
 package com.readhub.bookmanagement.controller;
 
 import com.readhub.bookmanagement.dto.UserProfileDto;
+import com.readhub.bookmanagement.dto.UserUpdateDto;
 import com.readhub.bookmanagement.service.UserService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
+import java.io.IOException;
+import java.util.List; // <--- THIS WAS MISSING
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    // Principal automatically injected by Spring Security, contains the logged-in user's email
-    @GetMapping("/profile")
-    @PreAuthorize("hasAnyRole('BORROWER', 'ADMIN')") // Redundant but good practice
-    public ResponseEntity<UserProfileDto> getUserProfile(Principal principal) {
-        UserProfileDto profile = userService.getUserProfile(principal.getName());
-        return ResponseEntity.ok(profile);
+    // --- CURRENT USER ENDPOINTS ---
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileDto> getMyProfile(Authentication authentication) {
+        String email = authentication.getName(); 
+        return ResponseEntity.ok(userService.getCurrentUserProfile(email));
     }
 
-    @PutMapping("/profile")
-    @PreAuthorize("hasAnyRole('BORROWER', 'ADMIN')")
-    public ResponseEntity<?> updateUserProfile(Principal principal, @Valid @RequestBody UserProfileDto profileDto) {
+    @PutMapping("/me")
+    public ResponseEntity<String> updateMyProfile(@RequestBody UserUpdateDto request, Authentication authentication) {
+        String email = authentication.getName();
+        userService.updateUserProfile(email, request);
+        return ResponseEntity.ok("Profile updated successfully");
+    }
+
+    @PostMapping("/me/avatar")
+    public ResponseEntity<String> uploadAvatar(@RequestParam("avatar") MultipartFile file, Authentication authentication) {
+        String email = authentication.getName();
         try {
-            UserProfileDto updatedProfile = userService.updateUserProfile(principal.getName(), profileDto);
-            return ResponseEntity.ok(updatedProfile);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            String fileUrl = userService.uploadAvatar(email, file);
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Failed to upload avatar");
         }
     }
 
-    @DeleteMapping("/profile")
-    @PreAuthorize("hasAnyRole('BORROWER', 'ADMIN')")
-    public ResponseEntity<?> deleteUserProfile(Principal principal) {
-        userService.deleteUserProfile(principal.getName());
-        return ResponseEntity.ok("User profile deleted successfully.");
+    @DeleteMapping("/me")
+    public ResponseEntity<String> deleteMyAccount(Authentication authentication) {
+        String email = authentication.getName();
+        userService.deleteAccount(email);
+        return ResponseEntity.ok("Account deleted successfully");
+    }
+
+    // --- ADMIN ENDPOINTS (FR-10) ---
+
+    // 1. List All Students
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserProfileDto>> getAllStudents() {
+        return ResponseEntity.ok(userService.getAllStudents());
+    }
+
+    // 2. Delete Specific User
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        userService.deleteUserById(id);
+        return ResponseEntity.ok("User deleted successfully");
     }
 }

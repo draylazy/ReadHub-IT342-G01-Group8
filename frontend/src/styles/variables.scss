@@ -1,0 +1,26 @@
+:root {
+  /* Core Brand Palette */
+  --color-maroon: #821124;
+  --color-gold: #FDC83A;
+  
+  /* Backgrounds */
+  --bg-page: #F4F6F9;
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
+  
+  /* Typography Colors */
+  --text-primary: #4D4D4D;
+  --text-secondary: #8C8C8C;
+  --text-white: #FFFFFF;
+  
+  /* Utilities */
+  --color-success: #5CB85C;
+  --color-warning: #FDC83A;
+  --color-border: #E0E0E0;
+  --color-danger: #DC3545;
+  
+  /* Spacing & Sizing */
+  --radius-default: 8px;
+  --shadow-subtle: 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-card: 0 4px 12px rgba(0,0,0,0.06);
+}

@@ -1,14 +1,15 @@
 package com.readhub.bookmanagement.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Notification {
 
     @Id
@@ -17,19 +18,21 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user; // Who receives the notification
 
     @ManyToOne
     @JoinColumn(name = "transaction_id")
-    private Transaction transaction;
+    private Transaction transaction; // Context (optional)
 
-    @Enumerated(EnumType.STRING)
-    private NotificationType type;
-
-    @Column(columnDefinition = "TEXT")
-    private String messageContent;
-
+    private String message;
+    
+    private boolean isRead;
+    
     private LocalDateTime sentDate;
 
-    private boolean isRead = false;
+    @PrePersist
+    protected void onCreate() {
+        this.sentDate = LocalDateTime.now();
+        this.isRead = false;
+    }
 }

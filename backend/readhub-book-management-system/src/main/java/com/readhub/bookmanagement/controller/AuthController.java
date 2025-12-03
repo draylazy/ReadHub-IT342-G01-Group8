@@ -3,53 +3,28 @@ package com.readhub.bookmanagement.controller;
 import com.readhub.bookmanagement.dto.AuthResponse;
 import com.readhub.bookmanagement.dto.LoginRequest;
 import com.readhub.bookmanagement.dto.RegisterRequest;
-import com.readhub.bookmanagement.model.User;
 import com.readhub.bookmanagement.service.AuthService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
-
-    @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        // --- NEW DEBUGGING CODE ---
-        try {
-            AuthResponse authResponse = authService.loginUser(loginRequest);
-            // If successful, return 200 OK
-            return ResponseEntity.ok(authResponse);
-        } catch (BadCredentialsException e) {
-            // If authentication fails (wrong user/pass), return 401
-            return ResponseEntity.status(401).body("Error: Invalid username or password");
-        } catch (Exception e) {
-            // Catch any other unexpected errors
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
-        }
-        // --- END OF NEW CODE ---
-    }
+    private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
-            User registeredUser = authService.registerUser(registerRequest);
-            return ResponseEntity.ok("User registered successfully!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser() {
-        // In a stateless JWT system, the client handles logout by deleting the token.
-        // This endpoint exists to satisfy the requirement and can be used for
-        // future features like token blacklisting.
-        return ResponseEntity.ok("User logged out successfully.");
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 }
