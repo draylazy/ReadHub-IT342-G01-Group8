@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Calendar, X, Clock } from 'lucide-react';
+import { AlertTriangle, Calendar, X } from 'lucide-react';
 import '../../styles/dashboard.scss'; // Ensure we have access to styles
 
 const UrgentActionModal = ({ onClose, overdueItems, dueSoonItems }) => {
