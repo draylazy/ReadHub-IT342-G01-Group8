@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,5 +64,11 @@ public class OverdueScheduler {
                 System.out.println(" -> Sent reminder for Transaction ID " + txn.getTransactionId());
             }
         }
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void runOnStartup() {
+        System.out.println("🚀 App Started: Running immediate overdue check...");
+        runScheduler();
     }
 }
