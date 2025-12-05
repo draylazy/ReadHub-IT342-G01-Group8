@@ -123,9 +123,11 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
-    }
+  public List<Transaction> getAllTransactions() {
+    // Returns latest transactions first
+    return transactionRepository.findAllByOrderByRequestDateDesc();
+}
+
     
     public List<Transaction> getMyHistory(String email) {
         User user = userRepository.findByEmail(email).orElseThrow();

@@ -94,14 +94,42 @@ const AdminDashboard = () => {
   };
 
   const handleStatusUpdate = async (id, status) => {
-    const isConfirmed = await confirm(`Update status to ${status}?`, "Confirm Action");
-    if(!isConfirmed) return;
-    try {
-      const res = await fetch(`http://localhost:8080/api/transactions/${id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ status }) });
-      if (res.ok) { setTransactions(prev => prev.map(t => t.transactionId === id ? { ...t, status: status } : t)); fetchData(); showToast(`Transaction updated`, 'success'); } 
-      else { const d = await res.json(); showToast(`Error: ${d.message}`, 'error'); }
-    } catch (err) { showToast("Network Error", 'error'); }
-  };
+  const isConfirmed = await confirm(`Update status to ${status}?`, "Confirm Action");
+  if (!isConfirmed) return;
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/transactions/${id}/status`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` 
+      },
+      body: JSON.stringify({ status })
+    });
+
+    if (res.ok) {
+      const updatedTxn = await res.json(); // get updated transaction from backend
+
+      setTransactions(prev => {
+        // Replace the old transaction with the updated one
+        const filtered = prev.filter(t => t.transactionId !== id);
+        const updated = [updatedTxn, ...filtered]; // prepend updated to top
+        // Ensure latest first just in case
+        updated.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+        return updated;
+      });
+
+      showToast(`Transaction updated`, 'success');
+    } else {
+      const d = await res.json();
+      showToast(`Error: ${d.message}`, 'error');
+    }
+  } catch (err) {
+    showToast("Network Error", 'error');
+  }
+};
+
+
 
   const handleDeleteBook = async (id) => {
     const isConfirmed = await confirm("Delete book?", "Delete Book");

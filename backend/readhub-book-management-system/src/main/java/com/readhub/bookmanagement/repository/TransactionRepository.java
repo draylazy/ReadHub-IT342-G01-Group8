@@ -24,6 +24,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT t FROM Transaction t WHERE t.status = 'BORROWED' AND t.dueDate = :targetDate")
     List<Transaction> findByDueDate(@Param("targetDate") LocalDate targetDate);
 
+     // Get all transactions sorted by requestDate descending
+    List<Transaction> findAllByOrderByRequestDateDesc();
+
+    // Optional: get user-specific transactions sorted latest first
+    List<Transaction> findByUserOrderByRequestDateDesc(User user);
+
     boolean existsByBook(Book book);
     
     // This is required for UserService to safely delete users

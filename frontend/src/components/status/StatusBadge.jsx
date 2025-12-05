@@ -1,15 +1,36 @@
 import React from 'react';
 
 const getStyles = (status, copies) => {
-  const base = { padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' };
-  
-  if (status === 'APPROVED' || status === 'BORROWED' || copies > 0) {
-    return { ...base, backgroundColor: '#E6F4EA', color: 'var(--color-success)' }; // Green
+  const base = { 
+    padding: '4px 10px', 
+    borderRadius: '12px', 
+    fontSize: '11px', 
+    fontWeight: 700, 
+    textTransform: 'uppercase' 
+  };
+
+  // APPROVED
+  if (status === 'APPROVED') {
+    return { ...base, backgroundColor: '#DCFCE7', color: '#166534' }; // green
   }
+
+  // BORROWED
+  if (status === 'BORROWED') {
+    return { ...base, backgroundColor: '#DBEAFE', color: '#1D4ED8' }; // blue
+  }
+
+  // PENDING
   if (status === 'PENDING') {
-    return { ...base, backgroundColor: '#FFF4E5', color: 'var(--color-warning)' }; // Yellow
+    return { ...base, backgroundColor: '#FEF9C3', color: '#CA8A04' }; // yellow
   }
-  return { ...base, backgroundColor: '#FCE8E6', color: 'var(--color-danger)' }; // Red
+
+  // REJECTED
+  if (status === 'REJECTED') {
+    return { ...base, backgroundColor: '#FEE2E2', color: '#B91C1C' }; // red
+  }
+
+  // Default / fallback
+  return { ...base, backgroundColor: '#F3F4F6', color: '#374151' };
 };
 
 const StatusBadge = ({ status, copies = 1, label }) => {
