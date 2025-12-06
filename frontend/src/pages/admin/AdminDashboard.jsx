@@ -82,6 +82,15 @@ const AdminDashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // AUTO-REFRESH DASHBOARD EVERY 5 SECONDS
+useEffect(() => {
+  const interval = setInterval(() => {
+    fetchData();
+  }, 5000); // 5000ms = 5 seconds
+
+  return () => clearInterval(interval); // cleanup
+}, [fetchData]);
+
   // --- ACTIONS (Keep existing handleDeleteUser, handleStatusUpdate, etc.) ---
   const handleDeleteUser = async (userId) => {
     const isConfirmed = await confirm("Delete this user? If they have borrowed books in the past, this action will fail to preserve records.", "Delete User");

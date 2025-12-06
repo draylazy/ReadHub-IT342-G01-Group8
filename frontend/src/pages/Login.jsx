@@ -18,13 +18,14 @@ const Login = () => {
   const [notification, setNotification] = useState(null); 
 
   // Updated Form State to match the Image
-  const [form, setForm] = useState({ 
-    fullName: '',   // Combined Field
-    studentId: '',  // New Field (Visual only for now unless backend needs it)
-    email: '', 
-    password: '',
-    confirmPassword: '' // New Field
-  });
+ const [form, setForm] = useState({ 
+  firstName: '',
+  lastName: '',
+  studentId: '',
+  email: '', 
+  password: '',
+  confirmPassword: ''
+});
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -56,6 +57,12 @@ const Login = () => {
       return;
     }
 
+    // --- VALIDATION: Password length ---
+  if (mode === 'REGISTER' && form.password.length < 8) {
+  showToast('Password must be at least 8 characters long.', 'error');
+  return;
+  }
+
     const endpoint = mode === 'LOGIN' ? '/auth/login' : '/auth/register';
     
     // --- LOGIC: Split Full Name for Backend ---
@@ -64,19 +71,13 @@ const Login = () => {
     if (mode === 'LOGIN') {
       requestBody = { email: form.email, password: form.password };
     } else {
-      // Split "Juan Dela Cruz" -> First: "Juan", Last: "Dela Cruz"
-      // If only one name is provided, last name defaults to "." to prevent backend errors
-      const nameParts = form.fullName.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '.'; 
+   requestBody = { 
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      password: form.password
+  };
 
-      requestBody = { 
-        firstName, 
-        lastName, 
-        email: form.email, 
-        password: form.password 
-        // Note: studentId is currently ignored by backend, so we don't send it to avoid errors
-      };
     }
 
     try {
@@ -117,7 +118,7 @@ const Login = () => {
   const handleTabSwitch = (newRole) => {
     setRole(newRole);
     setMode('LOGIN');
-    setForm({ fullName: '', studentId: '', email: '', password: '', confirmPassword: '' });
+    setForm({ firstName: '', lastName: '', studentId: '', email: '', password: '', confirmPassword: '' });
   };
 
   return (
@@ -168,20 +169,34 @@ const Login = () => {
           {/* --- REGISTER FIELDS --- */}
           {mode === 'REGISTER' && (
             <>
-              {/* Full Name */}
-              <div className="input-group">
-                <label className="label">Full Name</label>
-                <div className="input-wrapper">
-                  <input 
-                    className="custom-input" 
-                    placeholder="Juan Dela Cruz"
-                    required 
-                    value={form.fullName}
-                    onChange={e => setForm({...form, fullName: e.target.value})}
-                  />
-                  <MoreHorizontal size={20} className="input-icon" />
-                </div>
-              </div>
+              {/* First Name */}
+<div className="input-group">
+  <label className="label">First Name</label>
+  <div className="input-wrapper">
+    <input
+      className="custom-input"
+      placeholder="Juan"
+      required
+      value={form.firstName}
+      onChange={e => setForm({ ...form, firstName: e.target.value })}
+    />
+  </div>
+</div>
+
+{/* Last Name */}
+<div className="input-group">
+  <label className="label">Last Name</label>
+  <div className="input-wrapper">
+    <input
+      className="custom-input"
+      placeholder="Dela Cruz"
+      required
+      value={form.lastName}
+      onChange={e => setForm({ ...form, lastName: e.target.value })}
+    />
+  </div>
+</div>
+
 
               {/* Student ID */}
               <div className="input-group">
@@ -232,25 +247,29 @@ const Login = () => {
           </div>
 
           {/* Confirm Password (Register Only) */}
-          {mode === 'REGISTER' && (
-            <div className="input-group">
-              <label className="label">Confirm Password</label>
-              <div className="input-wrapper">
-                <input 
-                  type={showConfirmPassword ? "text" : "password"} 
-                  className="custom-input" 
-                  placeholder="••••••••"
-                  required
-                  value={form.confirmPassword}
-                  onChange={e => setForm({...form, confirmPassword: e.target.value})}
-                />
-                <button type="button" className="password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-          )}
-
+         {mode === 'REGISTER' && (
+  <div className="input-group">
+    <label className="label">Confirm Password</label>
+    <div className="input-wrapper">
+      <input 
+        type={showConfirmPassword ? "text" : "password"} 
+        className="custom-input" 
+        placeholder="••••••••"
+        required
+        minLength={8}   // <--- ADD THIS
+        value={form.confirmPassword}
+        onChange={e => setForm({...form, confirmPassword: e.target.value})}
+      />
+      <button 
+        type="button" 
+        className="password-toggle" 
+        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+      >
+        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+      </button>
+    </div>
+  </div>
+)}
           <button type="submit" className="submit-btn">
             {mode === 'LOGIN' ? 'Login' : 'Register'}
           </button>

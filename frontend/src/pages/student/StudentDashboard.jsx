@@ -52,6 +52,16 @@ const StudentDashboard = () => {
     checkUrgency();
   }, [checkUrgency]);
 
+  // Auto-refresh every 5 seconds
+useEffect(() => {
+  const interval = setInterval(() => {
+    checkUrgency();  // refresh data
+  }, 5000); // 5 second
+
+  return () => clearInterval(interval); // cleanup
+}, [checkUrgency]);
+
+
   return (
     <DashboardLayout>
       {/* ... (Existing Action Bar code) ... */}

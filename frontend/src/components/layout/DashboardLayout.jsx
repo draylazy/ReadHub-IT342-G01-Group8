@@ -10,21 +10,20 @@ const DashboardLayout = ({ children }) => {
   
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  
-  // --- 1. CLOCK STATE ---
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // <- NEW
+
+  // --- CLOCK STATE ---
   const [currentTime, setCurrentTime] = useState(new Date());
   
   const notificationRef = useRef(null);
 
-  // --- 2. CLOCK TIMER ---
+  // --- CLOCK TIMER ---
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // 3. Fetch Notifications
+  // --- FETCH NOTIFICATIONS ---
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -40,7 +39,6 @@ const DashboardLayout = ({ children }) => {
     if (token) fetchNotifications();
   }, [token]);
 
-  // 4. Mark as Read
   const markAsRead = useCallback(async () => {
     const hasUnread = notifications.some(n => !n.isRead);
     if (!hasUnread) return;
@@ -55,23 +53,22 @@ const DashboardLayout = ({ children }) => {
     } catch (err) { console.error("Failed to mark read", err); }
   }, [notifications, token]);
 
-  // 5. Handle Click Outside
+  // --- HANDLE CLICK OUTSIDE ---
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         if (showNotifications) {
           setShowNotifications(false);
-          markAsRead(); 
+          markAsRead();
         }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [notificationRef, showNotifications, markAsRead]); 
+  }, [notificationRef, showNotifications, markAsRead]);
 
-  // Toggle Logic
   const toggleNotifications = (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     if (showNotifications) {
       setShowNotifications(false);
       markAsRead();
@@ -80,32 +77,23 @@ const DashboardLayout = ({ children }) => {
     }
   };
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  // --- LOGOUT WITH CONFIRMATION ---
+  const handleLogoutClick = () => setShowLogoutConfirm(true);
+  const confirmLogout = () => { logout(); navigate('/login'); setShowLogoutConfirm(false); };
+  const cancelLogout = () => setShowLogoutConfirm(false);
 
-  // Helper: Dynamic Icon
   const getNotificationStyle = (msg) => {
     const lower = msg.toLowerCase();
-    if (lower.includes('approved') || lower.includes('successfully')) {
-      return { icon: <CheckCircle2 size={18} />, type: 'success' };
-    }
-    if (lower.includes('rejected') || lower.includes('overdue')) {
-      return { icon: <XCircle size={18} />, type: 'error' };
-    }
-    if (lower.includes('new request')) {
-      return { icon: <Clock size={18} />, type: 'pending' };
-    }
+    if (lower.includes('approved') || lower.includes('successfully')) return { icon: <CheckCircle2 size={18} />, type: 'success' };
+    if (lower.includes('rejected') || lower.includes('overdue')) return { icon: <XCircle size={18} />, type: 'error' };
+    if (lower.includes('new request')) return { icon: <Clock size={18} />, type: 'pending' };
     return { icon: <Info size={18} />, type: 'info' };
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  // --- CLOCK FORMATTERS ---
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  };
-  const formatDate = (date) => {
-    return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-  };
+  const formatTime = (date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const formatDate = (date) => date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 
   return (
     <div className="dashboard-container">
@@ -126,8 +114,6 @@ const DashboardLayout = ({ children }) => {
           </div>
 
           <div className="user-menu">
-            
-            {/* --- SYSTEM CLOCK RENDERED HERE --- */}
             <div className="system-clock">
               <span className="clock-time">{formatTime(currentTime)}</span>
               <span className="clock-date">{formatDate(currentTime)}</span>
@@ -135,35 +121,28 @@ const DashboardLayout = ({ children }) => {
 
             <div className="menu-divider"></div>
 
-            {/* NOTIFICATION CENTER */}
+            {/* NOTIFICATIONS */}
             <div className="notification-wrapper" ref={notificationRef}>
-              <button 
-                className={`notification-btn ${showNotifications ? 'active' : ''}`} 
-                onClick={toggleNotifications}
-              >
+              <button className={`notification-btn ${showNotifications ? 'active' : ''}`} onClick={toggleNotifications}>
                 <Bell size={20} />
                 {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
               </button>
-
               {showNotifications && (
                 <div className="notification-dropdown">
                   <div className="dropdown-header">
                     <h3>Notifications</h3>
                     <span className="badge-count">{notifications.length} New</span>
                   </div>
-                  
                   <div className="notification-list">
                     {notifications.length > 0 ? (
                       notifications.map(note => {
                         const style = getNotificationStyle(note.message);
                         return (
                           <div key={note.notificationId} className={`notif-item ${style.type} ${!note.isRead ? 'unread-item' : ''}`}>
-                            <div className="notif-icon-box">
-                              {style.icon}
-                            </div>
+                            <div className="notif-icon-box">{style.icon}</div>
                             <div className="notif-content">
                               <p className="notif-msg">{note.message}</p>
-                              <span className="notif-date">{new Date(note.sentDate).toLocaleDateString()} • {new Date(note.sentDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                              <span className="notif-date">{new Date(note.sentDate).toLocaleDateString()} • {new Date(note.sentDate).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                             </div>
                             {!note.isRead && <div className="dot-unread"></div>}
                           </div>
@@ -183,25 +162,36 @@ const DashboardLayout = ({ children }) => {
             <div className="menu-divider"></div>
 
             {/* PROFILE BUTTON */}
-            <button 
-              className="user-profile-btn" 
-              onClick={() => navigate('/profile')} 
-              title="View Profile"
-            >
-               <div className="user-avatar" style={user?.avatarUrl ? { backgroundImage: `url(${user.avatarUrl})`, backgroundSize: 'cover' } : {}}>
-                  {!user?.avatarUrl && (user?.firstName?.charAt(0) || 'U')}
-               </div>
-               <div className="user-info">
-                 <span className="user-name">{user?.firstName || 'User'}</span>
-                 <span className="user-role">{user?.role === 'ROLE_ADMIN' ? 'Admin' : 'Student'}</span>
-               </div>
+            <button className="user-profile-btn" onClick={() => navigate('/profile')} title="View Profile">
+              <div className="user-avatar" style={user?.avatarUrl ? { backgroundImage: `url(${user.avatarUrl})`, backgroundSize: 'cover' } : {}}>
+                {!user?.avatarUrl && (user?.firstName?.charAt(0) || 'U')}
+              </div>
+              <div className="user-info">
+                <span className="user-name">{user?.firstName || 'User'}</span>
+                <span className="user-role">{user?.role === 'ROLE_ADMIN' ? 'Admin' : 'Student'}</span>
+              </div>
             </button>
-            
-            <button onClick={handleLogout} className="logout-btn" title="Logout"><LogOut size={16} /></button>
+
+            <button onClick={handleLogoutClick} className="logout-btn" title="Logout"><LogOut size={16} /></button>
           </div>
         </div>
       </nav>
+
       <main className="container" style={{ paddingBottom: '60px' }}>{children}</main>
+
+      {/* --- LOGOUT CONFIRMATION MODAL --- */}
+      {showLogoutConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to log out?</p>
+            <div className="modal-actions">
+              <button className="btn-confirm" onClick={confirmLogout}>Yes, Logout</button>
+              <button className="btn-cancel" onClick={cancelLogout}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
