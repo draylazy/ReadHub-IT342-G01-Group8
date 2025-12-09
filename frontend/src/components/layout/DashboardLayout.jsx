@@ -24,20 +24,30 @@ const DashboardLayout = ({ children }) => {
   }, []);
 
   // --- FETCH NOTIFICATIONS ---
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await fetch('http://localhost:8080/api/notifications', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setNotifications(data);
-        }
-      } catch (err) { console.error(err); }
-    };
-    if (token) fetchNotifications();
-  }, [token]);
+ useEffect(() => {
+  if (!token) return;
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/notifications', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  fetchNotifications(); // initial fetch
+
+  const interval = setInterval(() => {
+    fetchNotifications(); // auto-refresh every 5 seconds
+  }, 5000);
+
+  return () => clearInterval(interval); // cleanup on unmount
+}, [token]);
+
 
   const markAsRead = useCallback(async () => {
     const hasUnread = notifications.some(n => !n.isRead);
@@ -155,6 +165,57 @@ const DashboardLayout = ({ children }) => {
                       </div>
                     )}
                   </div>
+
+          {/*---- TESTING NI KANANG MA CLICK ANG NOTIF PARA MO READ BUT PROBLEM ANI ANI KAY IG REFRESH MO BALIK SIYA UNREAD ----*/}
+                  {/*    
+              <div className="notification-list">
+  {notifications.length > 0 ? (
+    notifications.map(note => {
+      const style = getNotificationStyle(note.message);
+      return (
+        <button
+          key={note.notificationId}
+          className={`notif-item ${style.type} ${!note.isRead ? 'unread-item' : ''}`}
+          onClick={() => {
+            // Example action: navigate to transaction or mark as read
+            console.log('Notification clicked:', note);
+            // Optional: mark as read immediately
+            setNotifications(prev =>
+              prev.map(n =>
+                n.notificationId === note.notificationId ? { ...n, isRead: true } : n
+              )
+            );
+          }}
+          style={{
+            display: 'flex',
+            width: '100%',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            textAlign: 'left',
+            padding: '8px 0',
+          }}
+        >
+          <div className="notif-icon-box">{style.icon}</div>
+          <div className="notif-content">
+            <p className="notif-msg">{note.message}</p>
+            <span className="notif-date">
+              {new Date(note.sentDate).toLocaleDateString()} •{' '}
+              {new Date(note.sentDate).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
+            </span>
+          </div>
+          {!note.isRead && <div className="dot-unread"></div>}
+        </button>
+      );
+    })
+  ) : (
+    <div className="empty-notif">
+      <Bell size={32} style={{ opacity: 0.2, marginBottom: 8 }}/>
+      <p>No new notifications</p>
+    </div>
+  )}
+</div>
+*/}
                 </div>
               )}
             </div>

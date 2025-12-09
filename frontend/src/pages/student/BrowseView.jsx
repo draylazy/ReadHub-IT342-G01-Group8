@@ -122,6 +122,18 @@ const BrowseView = () => {
     loadData();
   }, [loadData]);
 
+  useEffect(() => {
+  if (!token) return;
+
+  const interval = setInterval(() => {
+    console.log("Refreshing BrowseView...");
+    loadData();
+  }, 5000); // refresh every 5 seconds
+
+  return () => clearInterval(interval);
+}, [token, loadData]); // <- depends on token and loadData
+
+
   const handleBorrow = async (bookId) => {
     // 1. Check for Duplicates in History
     const activeTxn = history.find(t => 
